@@ -163,6 +163,8 @@ func getHealthCheckFunc(hco *options.HealthCheckerOptions) func() (bool, error) 
 			}
 			return true, nil
 		}
+	case types.CustomComponent:
+		return healthCheckEndpointOKFunc(hco.Endpoint, hco.HealthCheckTimeout)
 	default:
 		klog.Warningf("Unsupported component: %v", hco.Component)
 	}

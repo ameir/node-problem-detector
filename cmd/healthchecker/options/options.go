@@ -37,6 +37,7 @@ type HealthCheckerOptions struct {
 	Component          string
 	Service            string
 	EnableRepair       bool
+	Endpoint           string
 	CriCtlPath         string
 	CriSocketPath      string
 	CriTimeout         time.Duration
@@ -49,7 +50,7 @@ type HealthCheckerOptions struct {
 // AddFlags adds health checker command line options to pflag.
 func (hco *HealthCheckerOptions) AddFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&hco.Component, "component", types.KubeletComponent,
-		"The component to check health for. Supports kubelet, docker, kube-proxy, and cri")
+		"The component to check health for. Supports kubelet, docker, kube-proxy, cri, and custom.")
 	// Deprecated: For backward compatibility on linux environment. Going forward "service" will be used instead of systemd-service
 	if runtime.GOOS == "linux" {
 		fs.MarkDeprecated("systemd-service", "please use --service flag instead")

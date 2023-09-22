@@ -38,6 +38,7 @@ const (
 	DockerComponent    = "docker"
 	ContainerdService  = "containerd"
 	KubeProxyComponent = "kube-proxy"
+	CustomComponent    = "custom"
 
 	LogPatternFlagSeparator = ":"
 	hostAddressKey          = "HOST_ADDRESS"
