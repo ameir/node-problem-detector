@@ -28,48 +28,48 @@ import (
 	"k8s.io/node-problem-detector/pkg/healthchecker/types"
 )
 
-type healthChecker struct {
-	component       string
-	service         string
-	enableRepair    bool
-	healthCheckFunc func() (bool, error)
+type HealthChecker struct {
+	Component       string
+	Service         string
+	EnableRepair    bool
+	HealthCheckFunc func() (bool, error)
 	// The repair is "best-effort" and ignores the error from the underlying actions.
 	// The bash commands to kill the process will fail if the service is down and hence ignore.
-	repairFunc         func()
-	uptimeFunc         func() (time.Duration, error)
-	crictlPath         string
-	healthCheckTimeout time.Duration
-	coolDownTime       time.Duration
-	loopBackTime       time.Duration
-	logPatternsToCheck map[string]int
+	RepairFunc         func()
+	UptimeFunc         func() (time.Duration, error)
+	CrictlPath         string
+	HealthCheckTimeout time.Duration
+	CoolDownTime       time.Duration
+	LoopBackTime       time.Duration
+	LogPatternsToCheck map[string]int
 }
 
 // NewHealthChecker returns a new health checker configured with the given options.
-func NewHealthChecker(hco *options.HealthCheckerOptions) (types.HealthChecker, error) {
-	hc := &healthChecker{
-		component:          hco.Component,
-		enableRepair:       hco.EnableRepair,
-		crictlPath:         hco.CriCtlPath,
-		healthCheckTimeout: hco.HealthCheckTimeout,
-		coolDownTime:       hco.CoolDownTime,
-		service:            hco.Service,
-		loopBackTime:       hco.LoopBackTime,
-		logPatternsToCheck: hco.LogPatterns.GetLogPatternCountMap(),
+func NewHealthChecker(hco *options.HealthCheckerOptions) (*HealthChecker, error) {
+	hc := &HealthChecker{
+		Component:          hco.Component,
+		EnableRepair:       hco.EnableRepair,
+		CrictlPath:         hco.CriCtlPath,
+		HealthCheckTimeout: hco.HealthCheckTimeout,
+		CoolDownTime:       hco.CoolDownTime,
+		Service:            hco.Service,
+		LoopBackTime:       hco.LoopBackTime,
+		LogPatternsToCheck: hco.LogPatterns.GetLogPatternCountMap(),
 	}
-	hc.healthCheckFunc = getHealthCheckFunc(hco)
-	hc.repairFunc = getRepairFunc(hco)
-	hc.uptimeFunc = getUptimeFunc(hco.Service)
+	hc.HealthCheckFunc = getHealthCheckFunc(hco)
+	hc.RepairFunc = getRepairFunc(hco)
+	hc.UptimeFunc = getUptimeFunc(hco.Service)
 	return hc, nil
 }
 
 // CheckHealth checks for the health of the component and tries to repair if enabled.
 // Returns true if healthy, false otherwise.
-func (hc *healthChecker) CheckHealth() (bool, error) {
-	healthy, err := hc.healthCheckFunc()
+func (hc *HealthChecker) CheckHealth() (bool, error) {
+	healthy, err := hc.HealthCheckFunc()
 	if err != nil {
 		return healthy, err
 	}
-	logPatternHealthy, err := logPatternHealthCheck(hc.service, hc.loopBackTime, hc.logPatternsToCheck)
+	logPatternHealthy, err := logPatternHealthCheck(hc.Service, hc.LoopBackTime, hc.LogPatternsToCheck)
 	if err != nil {
 		return logPatternHealthy, err
 	}
@@ -79,17 +79,17 @@ func (hc *healthChecker) CheckHealth() (bool, error) {
 
 	// The service is unhealthy.
 	// Attempt repair based on flag.
-	if hc.enableRepair {
+	if hc.EnableRepair {
 		// repair if the service has been up for the cool down period.
-		uptime, err := hc.uptimeFunc()
+		uptime, err := hc.UptimeFunc()
 		if err != nil {
-			klog.Infof("error in getting uptime for %v: %v\n", hc.component, err)
+			klog.Infof("error in getting uptime for %v: %v\n", hc.Component, err)
 			return false, nil
 		}
-		klog.Infof("%v is unhealthy, component uptime: %v\n", hc.component, uptime)
-		if uptime > hc.coolDownTime {
-			klog.Infof("%v cooldown period of %v exceeded, repairing", hc.component, hc.coolDownTime)
-			hc.repairFunc()
+		klog.Infof("%v is unhealthy, component uptime: %v\n", hc.Component, uptime)
+		if uptime > hc.CoolDownTime {
+			klog.Infof("%v cooldown period of %v exceeded, repairing", hc.Component, hc.CoolDownTime)
+			hc.RepairFunc()
 		}
 	}
 	return false, nil

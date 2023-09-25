@@ -28,13 +28,13 @@ var repairCalled bool
 
 func NewTestHealthChecker(repairFunc func(), healthCheckFunc func() (bool, error), uptimeFunc func() (time.Duration, error), enableRepair bool) types.HealthChecker {
 	repairCalled = false
-	return &healthChecker{
-		enableRepair:       enableRepair,
-		healthCheckFunc:    healthCheckFunc,
-		repairFunc:         repairFunc,
-		uptimeFunc:         uptimeFunc,
-		healthCheckTimeout: time.Second,
-		coolDownTime:       2 * time.Second,
+	return &HealthChecker{
+		EnableRepair:       enableRepair,
+		HealthCheckFunc:    healthCheckFunc,
+		RepairFunc:         repairFunc,
+		UptimeFunc:         uptimeFunc,
+		HealthCheckTimeout: time.Second,
+		CoolDownTime:       2 * time.Second,
 	}
 }
 
